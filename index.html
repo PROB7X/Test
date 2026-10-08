@@ -2,42 +2,86 @@
 <html lang="ru">
 <head>
     <meta charset="UTF-8">
-    <title>Мой Одностраничный Сайт</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Мой SPA Сайт</title>
     <style>
-        body { font-family: Arial, sans-serif; text-align: center; padding-top: 50px; }
-        .reward-box { display: none; background: #e0ffd0; border: 2px solid #40a020; padding: 20px; margin: 20px auto; max-width: 400px; border-radius: 8px; }
+        * { box-sizing: border-box; }
+        body { font-family: 'Segoe UI', Arial, sans-serif; margin: 0; padding: 0; background: #f5f7fb; color: #333; text-align: center; }
+        
+        /* ГЛАВНАЯ СТРАНИЦА (обычный вид) */
+        .main-page { padding: 50px 20px; }
+        .reward-box { display: none; background: #e6f9ec; border: 2px dashed #27ae60; padding: 25px; margin: 30px auto; max-width: 500px; border-radius: 12px; }
+        
+        /* ПРОМО-ЭКРАН (абсолютно другой вид на весь экран) */
+        .promo-screen {
+            display: none; /* Изначально скрыт, включается через JS */
+            position: fixed;
+            top: 0; left: 0; width: 100vw; height: 100vh;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); /* Яркий фон */
+            color: white;
+            z-index: 9999;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            transition: opacity 0.5s ease; /* Плавное исчезновение */
+        }
+        .promo-card { background: rgba(255, 255, 255, 0.1); padding: 40px; border-radius: 20px; backdrop-filter: blur(10px); border: 1px solid rgba(255,255,255,0.2); }
+        .loader { border: 4px solid rgba(255,255,255,0.3); border-top: 4px solid #fff; border-radius: 50%; width: 30px; height: 30px; animation: spin 1s linear infinite; margin: 20px auto 0; }
+        @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
     </style>
 </head>
 <body>
 
-    <h1>Добро пожаловать на сайт!</h1>
-    <p>Это главная страница, дополнительных файлов нет.</p>
+    <!-- 1. ПРОМО-ЭКРАН (показывается только при наличии /#) -->
+    <div id="promoScreen" class="promo-screen">
+        <div class="promo-card">
+            <h1>🎁 Активация промокода...</h1>
+            <p>Вы нашли секретную ссылку! Начисляем бонус...</p>
+            <div class="loader"></div>
+        </div>
+    </div>
 
-    <!-- Блок с наградой, который изначально скрыт -->
-    <div id="rewardBlock" class="reward-box">
-        <h2>🎉 Поздравляем!</h2>
-        <p>Вы вошли по промо-ссылке и получили свою награду!</p>
+    <!-- 2. ГЛАВНАЯ СТРАНИЦА -->
+    <div class="main-page">
+        <h1>Добро пожаловать на основной сайт!</h1>
+        <p>Это стандартный контент главной страницы.</p>
+
+        <!-- Блок награды, который появится после редиректа -->
+        <div id="rewardBlock" class="reward-box">
+            <h2>🎉 Награда получена!</h2>
+            <p>Вам начислен приветственный бонус за переход по промо-ссылке.</p>
+        </div>
     </div>
 
     <script>
-        // Функция, которая сработает сразу при загрузке страницы
         window.addEventListener('DOMContentLoaded', () => {
-            
-            // 1. Получаем хэш из адресной строки (например, "#promo1")
-            const currentHash = window.location.hash;
-
-            // 2. Проверяем, совпадает ли хэш с вашим промокодом
-            if (currentHash === '#promo1') {
+            // Проверяем, есть ли ХЭШ в адресной строке (длина больше 1, то есть не просто пустой #)
+            if (window.location.hash && window.location.hash.length > 1) {
                 
-                // Действие: Показываем блок с наградой
-                document.getElementById('rewardBlock').style.display = 'block';
-                
-                // Здесь также можно вызвать функцию отправки награды на сервер (fetch/axios), 
-                // если у вас есть полноценная регистрация или база данных.
+                const promoScreen = document.getElementById('promoScreen');
+                const rewardBlock = document.getElementById('rewardBlock');
 
-                // 3. Убираем хэш из адресной строки, возвращая чистый домен site.domen/
-                // Метод replaceState меняет URL без перезагрузки страницы
-                history.replaceState(null, document.title, window.location.pathname + window.location.search);
+                // Включаем промо-экран вместо обычного сайта
+                promoScreen.style.display = 'flex';
+
+                // Запускаем таймер на 2 секунды (2000 миллисекунд)
+                setTimeout(() => {
+                    
+                    // 1. Включаем награду на главной странице
+                    rewardBlock.style.display = 'block';
+
+                    // 2. Очищаем хэш в URL (убираем /#promo из адресной строки без перезагрузки)
+                    history.replaceState(null, document.title, window.location.pathname + window.location.search);
+
+                    // 3. Плавно скрываем промо-экран
+                    promoScreen.style.opacity = '0';
+                    
+                    // Полностью удаляем его из видимости после завершения анимации (0.5 сек)
+                    setTimeout(() => {
+                        promoScreen.style.display = 'none';
+                    }, 500);
+
+                }, 2000);
             }
         });
     </script>
