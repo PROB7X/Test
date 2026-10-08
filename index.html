@@ -4,67 +4,42 @@
     <meta charset="UTF-8">
     <title>Мой Одностраничный Сайт</title>
     <style>
-        body {
-            font-family: Arial, sans-serif;
-            text-align: center;
-            padding: 50px;
-            background-color: #f4f4f9;
-        }
-        .reward-box {
-            display: none;
-            padding: 20px;
-            background-color: #d4edda;
-            color: #155724;
-            border: 1px solid #c3e6cb;
-            border-radius: 5px;
-            margin-top: 20px;
-        }
+        body { font-family: Arial, sans-serif; text-align: center; padding-top: 50px; }
+        .reward-box { display: none; background: #e0ffd0; border: 2px solid #40a020; padding: 20px; margin: 20px auto; max-width: 400px; border-radius: 8px; }
     </style>
 </head>
 <body>
 
-    <h1>Добро пожаловать на наш сайт!</h1>
-    <p>Это главная и единственная страница.</p>
+    <h1>Добро пожаловать на сайт!</h1>
+    <p>Это главная страница, дополнительных файлов нет.</p>
 
-    <!-- Блок для отображения награды -->
-    <div id="reward" class="reward-box"></div>
+    <!-- Блок с наградой, который изначально скрыт -->
+    <div id="rewardBlock" class="reward-box">
+        <h2>🎉 Поздравляем!</h2>
+        <p>Вы вошли по промо-ссылке и получили свою награду!</p>
+    </div>
 
     <script>
-        // 1. Функция, которая проверяет хэш при загрузке страницы
-        function checkPromo() {
-            // Получаем хэш из адресной строки (например, "#gold-promo" превратится в "gold-promo")
-            const hash = window.location.hash.substring(1);
-
-            // Если хэш есть (пользователь зашел по промо-ссылке)
-            if (hash) {
-                
-                // 2. Логика выдачи награды (здесь может быть ваш код)
-                giveReward(hash);
-
-                // 3. Меняем URL обратно на обычный домен БЕЗ перезагрузки страницы
-                // Пользователь увидит просто site.domen/ вместо site.domen/#promo
-                history.replaceState(null, null, window.location.pathname);
-            }
-        }
-
-        // Функция выдачи награды
-        function giveReward(promoName) {
-            const rewardDiv = document.getElementById('reward');
-            rewardDiv.style.display = 'block';
+        // Функция, которая сработает сразу при загрузке страницы
+        window.addEventListener('DOMContentLoaded', () => {
             
-            // Пример логики: проверяем, какой именно промокод введен
-            if (promoName === 'secret100') {
-                rewardDiv.innerText = "🎉 Вы ввели секретный промокод! Вам начислено 100 бонусов!";
-            } else {
-                rewardDiv.innerText = `🎁 Активирован промокод: "${promoName}". Награда успешно выдана!`;
+            // 1. Получаем хэш из адресной строки (например, "#promo1")
+            const currentHash = window.location.hash;
+
+            // 2. Проверяем, совпадает ли хэш с вашим промокодом
+            if (currentHash === '#promo1') {
+                
+                // Действие: Показываем блок с наградой
+                document.getElementById('rewardBlock').style.display = 'block';
+                
+                // Здесь также можно вызвать функцию отправки награды на сервер (fetch/axios), 
+                // если у вас есть полноценная регистрация или база данных.
+
+                // 3. Убираем хэш из адресной строки, возвращая чистый домен site.domen/
+                // Метод replaceState меняет URL без перезагрузки страницы
+                history.replaceState(null, document.title, window.location.pathname + window.location.search);
             }
-
-            // Здесь вы можете отправить запрос на свой сервер через fetch(), 
-            // чтобы сохранить награду в базе данных пользователя.
-        }
-
-        // Запускаем проверку сразу при загрузке страницы
-        window.addEventListener('DOMContentLoaded', checkPromo);
+        });
     </script>
 </body>
 </html>
