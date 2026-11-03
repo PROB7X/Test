@@ -3,344 +3,165 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Шахматы с рекламой</title>
+    <title>Получить промокод HELM77ZX</title>
     <style>
-        * {
-            box-sizing: border-box;
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #1a202c 0%, #2d3748 100%);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
             margin: 0;
-            padding: 0;
-            user-select: none;
+            color: #fff;
         }
-        body, html {
+        .container {
+            background: #ffffff;
+            color: #2d3748;
+            padding: 30px;
+            border-radius: 16px;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3);
             width: 100%;
-            height: 100%;
+            max-width: 360px;
+            text-align: center;
+            box-sizing: border-box;
+        }
+        h2 {
+            margin-top: 0;
+            font-size: 22px;
+            color: #1a202c;
+        }
+        p {
+            font-size: 14px;
+            color: #718096;
+            margin-bottom: 20px;
+        }
+        /* Контейнер для iframe капчи */
+        .captcha-zone {
+            width: 100%;
+            height: 210px; /* Высота подстроена под размер капчи */
+            border: 2px solid #e2e8f0;
+            border-radius: 10px;
             overflow: hidden;
-            font-family: Arial, sans-serif;
-            background-color: #2f3542;
-            display: flex;
-            justify-content: center;
-            align-items: center;
+            background: #fff;
+            margin-bottom: 10px;
         }
-
-        /* Полноэкранный оверлей для входа */
-        #fullscreen-overlay {
-            position: fixed;
-            top: 0;
-            left: 0;
+        iframe {
             width: 100%;
             height: 100%;
-            background: rgba(0, 0, 0, 0.95);
-            z-index: 9999;
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            flex-direction: column;
+            border: none;
         }
-        #fullscreen-btn {
-            padding: 20px 40px;
+        /* Блок с промокодом (изначально скрыт) */
+        .promo-zone {
+            display: none; /* Скрыт до прохождения капчи */
+            animation: fadeIn 0.5s ease forwards;
+        }
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        .promo-box {
+            background: #ebf8ff;
+            border: 2px dashed #3182ce;
+            color: #2b6cb0;
             font-size: 24px;
             font-weight: bold;
-            color: #fff;
-            background: #ff4757;
-            border: none;
-            border-radius: 10px;
-            cursor: pointer;
-            box-shadow: 0 5px 15px rgba(255, 71, 87, 0.4);
-            transition: transform 0.2s, background 0.2s;
+            padding: 15px;
+            border-radius: 8px;
+            letter-spacing: 2px;
+            margin: 15px 0;
         }
-        #fullscreen-btn:hover {
-            background: #ff6b81;
-            transform: scale(1.05);
-        }
-
-        /* Контейнер игры */
-        #game-container {
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            justify-content: center;
-        }
-        .status {
-            color: #white;
-            font-size: 20px;
-            margin-bottom: 15px;
-            font-weight: bold;
-            text-shadow: 1px 1px 2px rgba(0,0,0,0.5);
-            color: #f1f2f6;
-        }
-
-        /* Шахматная доска */
-        .board {
-            display: grid;
-            grid-template-columns: repeat(8, 70px);
-            grid-template-rows: repeat(8, 70px);
-            border: 4px solid #333;
-            box-shadow: 0 10px 30px rgba(0,0,0,0.5);
-        }
-        @media (max-width: 600px) {
-            .board {
-                grid-template-columns: repeat(8, 40px);
-                grid-template-rows: repeat(8, 40px);
-            }
-        }
-        .cell {
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            font-size: 36px;
-            cursor: pointer;
-        }
-        @media (max-width: 600px) {
-            .cell { font-size: 24px; }
-        }
-        .light { background-color: #f0d9b5; }
-        .dark { background-color: #b58863; }
-        .selected { background-color: #7bed9f !important; }
-
-        /* Полноэкранный рекламный оверлей */
-        #ad-overlay {
-            position: fixed;
-            top: 0;
-            left: 0;
-            width: 100vw;
-            height: 100vh;
-            background: rgba(0, 0, 0, 0.9);
-            z-index: 10000;
-            display: none;
-            justify-content: center;
-            align-items: center;
-            cursor: pointer;
-        }
-        /* Скрытое исходное видео для покадровой обработки */
-        #ad-video {
-            display: none;
-        }
-        /* Canvas для отображения видео без зеленого фона */
-        #ad-canvas {
-            max-width: 100%;
-            max-height: 100%;
-            object-fit: contain;
-        }
-        /* Кнопка закрытия (крестик) */
-        #close-ad-btn {
-            position: absolute;
-            top: 20px;
-            right: 30px;
-            font-size: 50px;
+        .btn-copy {
+            width: 100%;
+            background: #3182ce;
             color: white;
-            background: rgba(0,0,0,0.6);
-            border: 2px solid white;
-            width: 60px;
-            height: 60px;
-            line-height: 52px;
-            text-align: center;
-            border-radius: 50%;
-            cursor: pointer;
-            display: none; /* Изначально скрыт, появится через 3 сек */
-            z-index: 10001;
+            border: none;
+            padding: 12px;
+            font-size: 16px;
             font-weight: bold;
+            border-radius: 8px;
+            cursor: pointer;
             transition: background 0.2s;
         }
-        #close-ad-btn:hover {
-            background: rgba(255,0,0,0.8);
+        .btn-copy:hover {
+            background: #2b6cb0;
+        }
+        .success-badge {
+            color: #38a169;
+            font-weight: bold;
+            margin-bottom: 10px;
+            font-size: 14px;
         }
     </style>
 </head>
 <body>
 
-    <!-- Оверлей запроса полноэкранного режима -->
-    <div id="fullscreen-overlay">
-        <button id="fullscreen-btn">На весь экран</button>
+<div class="container">
+    <!-- ЭТАП 1: Защита капчей -->
+    <div id="captchaStage">
+        <h2>Активация бонуса</h2>
+        <p>Подтвердите, что вы не робот, чтобы забрать свой промокод</p>
+        <div class="captcha-zone">
+            <!-- Подключаем ваш фрейм капчи -->
+            <iframe 
+                src="https://github.io" 
+                id="captchaIframe"
+                sandbox="allow-scripts allow-same-origin">
+            </iframe>
+        </div>
     </div>
 
-    <!-- Основная игра -->
-    <div id="game-container">
-        <div class="status" id="status-text">Ход белых. Сделайте 3 хода для вызова рекламы.</div>
-        <div class="board" id="board"></div>
-    </div>
-
-    <!-- Полноэкранная реклама -->
-    <div id="ad-overlay">
-        <div id="close-ad-btn">&times;</div>
-        <video id="ad-video" src="lv_0_20261030201842.mp4" loop playsinline muted></video>
-        <canvas id="ad-canvas"></canvas>
-    </div>
-
-    <script>
-        // --- Переменные игры и рекламы ---
-        let moveCount = 0;
-        const tgLink = "https://t.me/LifeMod_VS";
+    <!-- ЭТАП 2: Показ промокода (откроется после капчи) -->
+    <div id="promoStage" class="promo-zone">
+        <div class="success-badge">🎉 Проверка успешно пройдена!</div>
+        <h2>Ваш промокод готов!</h2>
+        <p>Скопируйте его и используйте при оформлении</p>
         
-        const fullscreenOverlay = document.getElementById('fullscreen-overlay');
-        const fullscreenBtn = document.getElementById('fullscreen-btn');
-        const adOverlay = document.getElementById('ad-overlay');
-        const adVideo = document.getElementById('ad-video');
-        const adCanvas = document.getElementById('ad-canvas');
-        const ctx = adCanvas.getContext('2d');
-        const closeAdBtn = document.getElementById('close-ad-btn');
-        const statusText = document.getElementById('status-text');
-        const boardEl = document.getElementById('board');
+        <!-- Сам промокод -->
+        <div class="promo-box" id="promoCode">HELM77ZX</div>
+        
+        <button class="btn-copy" id="copyPromoBtn">Скопировать промокод</button>
+    </div>
+</div>
 
-        let animationFrameId = null;
-
-        // --- Управление Fullscreen режимом ---
-        fullscreenBtn.addEventListener('click', () => {
-            document.documentElement.requestFullscreen()
-                .catch(err => console.log("Ошибка перехода в fullscreen:", err));
-        });
-
-        function handleFullscreenChange() {
-            if (!document.fullscreenElement) {
-                // Если вышли из полноэкранного режима — показываем оверлей и стопаем видео
-                fullscreenOverlay.style.display = 'flex';
-                if (adOverlay.style.display === 'flex') {
-                    pauseAdVideo();
-                }
-            } else {
-                // Вошли в полноэкранный режим
-                fullscreenOverlay.style.display = 'none';
-                if (adOverlay.style.display === 'flex') {
-                    playAdVideo();
-                }
-            }
-        }
-        document.addEventListener('fullscreenchange', handleFullscreenChange);
-
-        // --- Шахматная доска (Упрощенная песочница) ---
-        const initialBoard = [
-            ['♜','♞','♝','♛','♚','♝','♞','♜'],
-            ['♟','♟','♟','♟','♟','♟','♟','♟'],
-            ['','','','','','','',''],
-            ['','','','','','','',''],
-            ['','','','','','','',''],
-            ['','','','','','','',''],
-            ['♙','♙','♙','♙','♙','♙','♙','♙'],
-            ['♖','♘','♗','♕','♔','♗','♘','♖']
-        ];
-
-        let selectedCell = null;
-
-        function createBoard() {
-            boardEl.innerHTML = '';
-            for (let r = 0; r < 8; r++) {
-                for (let c = 0; r < 8; c++) {
-                    if (c >= 8) break;
-                    const cell = document.createElement('div');
-                    cell.className = `cell ${(r + c) % 2 === 0 ? 'light' : 'dark'}`;
-                    cell.dataset.row = r;
-                    cell.dataset.col = c;
-                    cell.textContent = initialBoard[r][c];
-                    cell.addEventListener('click', onCellClick);
-                    boardEl.appendChild(cell);
-                }
-            }
+<script>
+    // Слушаем сигналы из iframe
+    window.addEventListener('message', function(event) {
+        // Безопасность: реагируем только на сообщения от вашего домена на GitHub
+        if (event.origin !== 'https://github.io') {
+            return; 
         }
 
-        function onCellClick(e) {
-            // Если не в фулскрине или идет реклама — клики по доске игнорируются
-            if (!document.fullscreenElement || adOverlay.style.display === 'flex') return;
-
-            const cell = e.currentTarget;
-            const r = parseInt(cell.dataset.row);
-            const c = parseInt(cell.dataset.col);
-
-            if (selectedCell) {
-                if (selectedCell === cell) {
-                    cell.classList.remove('selected');
-                    selectedCell = null;
-                } else {
-                    // Перемещаем фигуру (свободный ход для демонстрации)
-                    cell.textContent = selectedCell.textContent;
-                    selectedCell.textContent = '';
-                    selectedCell.classList.remove('selected');
-                    selectedCell = null;
-                    
-                    moveCount++;
-                    statusText.textContent = `Сделано ходов: ${moveCount}. Следующая реклама через ${3 - (moveCount % 3)} х.`;
-                    
-                    if (moveCount % 3 === 0) {
-                        showAd();
-                    }
-                }
-            } else {
-                if (cell.textContent !== '') {
-                    selectedCell = cell;
-                    cell.classList.add('selected');
-                }
-            }
-        }
-
-        // --- Логика рекламы и Хромакея (Зеленый экран) ---
-        function showAd() {
-            adOverlay.style.display = 'flex';
-            closeAdBtn.style.display = 'none';
-
-            // Запускаем воспроизведение
-            playAdVideo();
-
-            // Таймер на появление крестика через 3 секунды
-            setTimeout(() => {
-                closeAdBtn.style.display = 'block';
-            }, 3000);
-        }
-
-        function playAdVideo() {
-            adVideo.play().then(() => {
-                // Подстраиваем размеры холста под метаданные видео
-                adCanvas.width = adVideo.videoWidth || 640;
-                adCanvas.height = adVideo.videoHeight || 360;
-                renderChromaKey();
-            }).catch(err => console.log("Ошибка воспроизведения видео:", err));
-        }
-
-        function pauseAdVideo() {
-            adVideo.pause();
-            if (animationFrameId) {
-                cancelAnimationFrame(animationFrameId);
-            }
-        }
-
-        function renderChromaKey() {
-            if (adVideo.paused || adVideo.ended) return;
-
-            // Рисуем текущий кадр видео на скрытый/виртуальный контекст или сразу обрабатываем пиксели
-            ctx.drawImage(adVideo, 0, 0, adCanvas.width, adCanvas.height);
+        // Если капча прислала объект со статусом успеха
+        if (event.data && event.data.status === 'success') {
             
-            const frame = ctx.getImageData(0, 0, adCanvas.width, adCanvas.height);
-            const l = frame.data.length / 4;
-
-            for (let i = 0; i < l; i++) {
-                const r = frame.data[i * 4 + 0];
-                const g = frame.data[i * 4 + 1];
-                const b = frame.data[i * 4 + 2];
-
-                // Алгоритм определения зеленого цвета (хромакея)
-                // g > 100 (достаточно насыщенный зеленый) и он преобладает над красным и синим
-                if (g > 90 && g > r * 1.3 && g > b * 1.3) {
-                    frame.data[i * 4 + 3] = 0; // Делаем пиксель прозрачным
-                }
-            }
-            ctx.putImageData(frame, 0, 0);
-
-            animationFrameId = requestAnimationFrame(renderChromaKey);
+            // Скрываем блок с капчей
+            document.getElementById('captchaStage').style.display = 'none';
+            
+            // Показываем блок с промокодом
+            document.getElementById('promoStage').style.display = 'block';
         }
+    });
 
-        // Клик по оверлею (но не по крестику) уводит в ТГ
-        adOverlay.addEventListener('click', (e) => {
-            if (e.target !== closeAdBtn) {
-                window.open(tgLink, '_blank');
-            }
+    // Логика кнопки копирования промокода
+    document.getElementById('copyPromoBtn').addEventListener('click', function() {
+        const promoText = document.getElementById('promoCode').innerText;
+        
+        navigator.clipboard.writeText(promoText).then(() => {
+            const btn = document.getElementById('copyPromoBtn');
+            btn.innerText = '✓ Скопировано!';
+            btn.style.background = '#38a169';
+            
+            // Возвращаем исходный текст кнопки через 2 секунды
+            setTimeout(() => {
+                btn.innerText = 'Скопировать промокод';
+                btn.style.background = '#3182ce';
+            }, 2000);
+        }).catch(err => {
+            console.error('Ошибка копирования: ', err);
         });
+    });
+</script>
 
-        // Клик по крестику закрывает рекламу
-        closeAdBtn.addEventListener('click', (e) => {
-            e.stopPropagation(); // Чтобы не сработал переход по ссылке оверлея
-            pauseAdVideo();
-            adOverlay.style.display = 'none';
-        });
-
-        // Инициализация
-        createBoard();
-    </script>
 </body>
 </html>
