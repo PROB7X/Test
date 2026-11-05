@@ -2,166 +2,109 @@
 <html lang="ru">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Получить промокод HELM77ZX</title>
+    <title>Моя Игра</title>
     <style>
-        body {
-            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-            background: linear-gradient(135deg, #1a202c 0%, #2d3748 100%);
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            height: 100vh;
-            margin: 0;
-            color: #fff;
-        }
-        .container {
-            background: #ffffff;
-            color: #2d3748;
-            padding: 30px;
-            border-radius: 16px;
-            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3);
-            width: 100%;
-            max-width: 360px;
-            text-align: center;
-            box-sizing: border-box;
-        }
-        h2 {
-            margin-top: 0;
-            font-size: 22px;
-            color: #1a202c;
-        }
-        p {
-            font-size: 14px;
-            color: #718096;
-            margin-bottom: 20px;
-        }
-        /* Контейнер для iframe капчи */
-        .captcha-zone {
-            width: 100%;
-            height: 210px; /* Высота подстроена под размер капчи */
-            border: 2px solid #e2e8f0;
-            border-radius: 10px;
-            overflow: hidden;
-            background: #fff;
-            margin-bottom: 10px;
-        }
-        iframe {
-            width: 100%;
-            height: 100%;
-            border: none;
-        }
-        /* Блок с промокодом (изначально скрыт) */
-        .promo-zone {
-            display: none; /* Скрыт до прохождения капчи */
-            animation: fadeIn 0.5s ease forwards;
-        }
-        @keyframes fadeIn {
-            from { opacity: 0; transform: translateY(10px); }
-            to { opacity: 1; transform: translateY(0); }
-        }
-        .promo-box {
-            background: #ebf8ff;
-            border: 2px dashed #3182ce;
-            color: #2b6cb0;
-            font-size: 24px;
-            font-weight: bold;
-            padding: 15px;
-            border-radius: 8px;
-            letter-spacing: 2px;
-            margin: 15px 0;
-        }
-        .btn-copy {
-            width: 100%;
-            background: #3182ce;
-            color: white;
-            border: none;
-            padding: 12px;
-            font-size: 16px;
-            font-weight: bold;
-            border-radius: 8px;
-            cursor: pointer;
-            transition: background 0.2s;
-        }
-        .btn-copy:hover {
-            background: #2b6cb0;
-        }
-        .success-badge {
-            color: #38a169;
-            font-weight: bold;
-            margin-bottom: 10px;
-            font-size: 14px;
-        }
+        body { font-family: sans-serif; background: #1a1a1a; color: #fff; text-align: center; padding-top: 50px; }
+        .tab-content { display: none; background: #2a2a2a; padding: 20px; border-radius: 10px; max-width: 500px; margin: 20px auto; border: 1px solid #444; }
+        .active { display: block; }
+        nav button { padding: 10px 20px; margin: 5px; cursor: pointer; background: #444; color: #fff; border: none; border-radius: 5px; font-weight: bold; }
+        nav button:hover { background: #666; }
+        .gift-box { font-size: 22px; color: #00ffcc; margin-bottom: 20px; background: #222; display: inline-block; padding: 10px 20px; border-radius: 8px; }
     </style>
 </head>
 <body>
 
-<div class="container">
-    <!-- ЭТАП 1: Защита капчей -->
-    <div id="captchaStage">
-        <h2>Активация бонуса</h2>
-        <p>Подтвердите, что вы не робот, чтобы забрать свой промокод</p>
-        <div class="captcha-zone">
-            <!-- Подключаем ваш фрейм капчи -->
-            <iframe 
-                src="https://github.io" 
-                id="captchaIframe"
-                sandbox="allow-scripts allow-same-origin">
-            </iframe>
-        </div>
+    <!-- Статус секретного подарка -->
+    <div class="gift-box">
+        🎁 Статус подарка: <span id="gift-status">Не получен</span>
     </div>
 
-    <!-- ЭТАП 2: Показ промокода (откроется после капчи) -->
-    <div id="promoStage" class="promo-zone">
-        <div class="success-badge">🎉 Проверка успешно пройдена!</div>
-        <h2>Ваш промокод готов!</h2>
-        <p>Скопируйте его и используйте при оформлении</p>
-        
-        <!-- Сам промокод -->
-        <div class="promo-box" id="promoCode">HELM77ZX</div>
-        
-        <button class="btn-copy" id="copyPromoBtn">Скопировать промокод</button>
+    <!-- Вкладки игры -->
+    <nav>
+        <button onclick="openTab('main')">Главная</button>
+        <button onclick="openTab('inventory')">Инвентарь</button>
+    </nav>
+
+    <!-- Обычная главная вкладка -->
+    <div id="main" class="tab-content active">
+        <h1>🎮 Игровое Поле</h1>
+        <p>Добро пожаловать на prob7x.github.io/test!</p>
+        <p>Это ваша обычная вкладка игры.</p>
     </div>
-</div>
 
-<script>
-    // Слушаем сигналы из iframe
-    window.addEventListener('message', function(event) {
-        // Безопасность: реагируем только на сообщения от вашего домена на GitHub
-        if (event.origin !== 'https://github.io') {
-            return; 
-        }
+    <!-- Вкладка инвентаря -->
+    <div id="inventory" class="tab-content">
+        <h1>🎒 Ваш Инвентарь</h1>
+        <p id="inventory-text">У вас пока пусто.</p>
+    </div>
 
-        // Если капча прислала объект со статусом успеха
-        if (event.data && event.data.status === 'success') {
-            
-            // Скрываем блок с капчей
-            document.getElementById('captchaStage').style.display = 'none';
-            
-            // Показываем блок с промокодом
-            document.getElementById('promoStage').style.display = 'block';
-        }
-    });
-
-    // Логика кнопки копирования промокода
-    document.getElementById('copyPromoBtn').addEventListener('click', function() {
-        const promoText = document.getElementById('promoCode').innerText;
+    <script>
+        // Проверяем при старте, был ли подарок получен ранее
+        let hasGift = localStorage.getItem('promo2026_activated') === 'true';
         
-        navigator.clipboard.writeText(promoText).then(() => {
-            const btn = document.getElementById('copyPromoBtn');
-            btn.innerText = '✓ Скопировано!';
-            btn.style.background = '#38a169';
-            
-            // Возвращаем исходный текст кнопки через 2 секунды
-            setTimeout(() => {
-                btn.innerText = 'Скопировать промокод';
-                btn.style.background = '#3182ce';
-            }, 2000);
-        }).catch(err => {
-            console.error('Ошибка копирования: ', err);
-        });
-    });
-</script>
+        // Функция обновления текста подарка на экране
+        function updateGameUI() {
+            if (hasGift) {
+                document.getElementById('gift-status').innerText = "АКТИВИРОВАН (Подарок 2026 получен!)";
+                document.getElementById('gift-status').style.color = "#ffcc00";
+                document.getElementById('inventory-text').innerHTML = "⭐ <strong>Секретный подарок 2026</strong> (Успешно сохранен в вашем профиле!)";
+            }
+        }
 
+        // Функция переключения вкладок
+        function openTab(tabId) {
+            const tabs = document.getElementsByClassName('tab-content');
+            for (let i = 0; i < tabs.length; i++) {
+                tabs[i].classList.remove('active');
+            }
+            document.getElementById(tabId).classList.add('active');
+        }
+
+        // --- ЛОГИКА СЧИТЫВАНИЯ ПРЯМОЙ ССЫЛКИ ---
+        function checkPromoRoute() {
+            const urlParams = new URLSearchParams(window.location.search);
+            const customPath = urlParams.get('p'); // Вытаскиваем переданный из 404.html путь
+
+            if (customPath) {
+                // Разрезаем строку пути по слэшам. Для "/test/PROMO2026" массив будет: ['test', 'PROMO2026']
+                const segments = customPath.split('/').filter(Boolean);
+
+                // Проверяем структуру: первый элемент 'test', а второй — это наш промокод
+                if (segments[0] === 'test' && segments[1]) {
+                    const promoCode = decodeURIComponent(segments[1]).toLowerCase(); // переводим в мелкий шрифт для удобства
+
+                    // Если в ссылке после /test/ указан именно код promo2026
+                    if (promoCode === 'promo2026') {
+                        if (hasGift) {
+                            alert("Вы уже забирали этот подарок!");
+                        } else {
+                            // Сохраняем подарок в браузере навсегда
+                            localStorage.setItem('promo2026_activated', 'true');
+                            hasGift = true;
+                            alert("🎉 Ура! Вы перешли по секретной ссылке. Подарок успешно добавлен на ваш аккаунт!");
+                        }
+                    } else {
+                        alert("❌ Ошибка: Такого промокода или страницы не существует.");
+                    }
+
+                    // Обновляем внешний вид игры
+                    updateGameUI();
+
+                    // МГНОВЕННО очищаем адресную строку браузера до обычной ссылки: prob7x.github.io/test/
+                    const cleanUrl = window.location.origin + '/test/';
+                    window.history.replaceState(null, '', cleanUrl);
+
+                    // Открываем игроку обычную вкладку
+                    openTab('main');
+                }
+            }
+        }
+
+        // Запуск проверок при загрузке страницы
+        window.onload = function() {
+            checkPromoRoute();
+            updateGameUI();
+        };
+    </script>
 </body>
 </html>
