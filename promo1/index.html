@@ -1,38 +1,28 @@
 <!DOCTYPE html>
 <html lang="ru">
-  <head>
+<head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Мой сайт</title>
-  </head>
-  <body>
-    <header>
-      <h1>Привет! Это мой сайт.</h1>
-    </header>
+    <title>Активация промокода...</title>
+    <style>
+        body { font-family: Arial, sans-serif; text-align: center; margin-top: 100px; background: #eef9f0; }
+        .loader { font-size: 1.5em; color: #28a745; font-weight: bold; }
+    </style>
+</head>
+<body>
 
-    <main>
-      <section>
-        <h2>Обо мне</h2>
-        <p>Я люблю Minecraft, делаю свои проекты и пробую создавать сайты. Сейчас учусь работать с HTML, CSS и кодом.</p>
-      </section>
+    <div class="loader">
+        ⚙️ Настройка промокода... Сейчас вы будете перенаправлены.
+    </div>
 
-      <section>
-        <h2>Мои идеи</h2>
-        <ul>
-          <li>Симулятор рыбалки в Minecraft с разными удочками и локациями.</li>
-          <li>Сайт-конструктор модов в стиле Scratch.</li>
-          <li>Концепция бесконечного приближения: от улицы до атомов.</li>
-        </ul>
-      </section>
+    <script>
+        // 1. Записываем в LocalStorage флаг активации
+        localStorage.setItem('my_promo_gift', 'activated');
 
-      <section>
-        <h2>Что планирую сделать дальше</h2>
-        <p>Хочу доделать базу в клане GR7S: поставить ворота, клетки для попугаев (как символ клана), сделать красивое освещение и выдавать киты игрокам. Ещё интересно попробовать приложения для AR‑очков.</p>
-      </section>
-    </main>
+        // 2. Через 1 секунду перекидываем пользователя на главную
+        setTimeout(function() {
+            window.location.href = "index.html";
+        }, 1000); 
+    </script>
 
-    <footer>
-      <p>&copy; 2026 Мой проект. Всё сделано своими руками.</p>
-    </footer>
-  </body>
+</body>
 </html>
