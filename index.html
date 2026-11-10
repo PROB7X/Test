@@ -15,7 +15,6 @@
 
     <div class="box">
         <h1>Личный кабинет</h1>
-        <!-- Сюда скрипт выведет текущий статус подарка -->
         <div class="status" id="giftStatus">Загрузка статуса...</div>
         
         <button onclick="checkGift()">Проверить подарок вручную</button>
@@ -23,7 +22,6 @@
     </div>
 
     <script>
-        // Функция, которая проверяет LocalStorage и меняет текст на экране
         function checkGift() {
             const statusElement = document.getElementById('giftStatus');
             const hasGift = localStorage.getItem('my_promo_gift');
@@ -37,16 +35,12 @@
             }
         }
 
-        // Функция для сброса (чтобы протестировать заново)
         function resetGift() {
             localStorage.removeItem('my_promo_gift');
             checkGift();
         }
 
-        // Проверяем статус сразу при открытии страницы
         window.onload = checkGift;
-        
-        // Слушаем изменения в LocalStorage из других вкладок в реальном времени
         window.addEventListener('storage', checkGift);
     </script>
 
