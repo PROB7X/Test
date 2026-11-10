@@ -2,109 +2,53 @@
 <html lang="ru">
 <head>
     <meta charset="UTF-8">
-    <title>Моя Игра</title>
+    <title>Главная страница</title>
     <style>
-        body { font-family: sans-serif; background: #1a1a1a; color: #fff; text-align: center; padding-top: 50px; }
-        .tab-content { display: none; background: #2a2a2a; padding: 20px; border-radius: 10px; max-width: 500px; margin: 20px auto; border: 1px solid #444; }
-        .active { display: block; }
-        nav button { padding: 10px 20px; margin: 5px; cursor: pointer; background: #444; color: #fff; border: none; border-radius: 5px; font-weight: bold; }
-        nav button:hover { background: #666; }
-        .gift-box { font-size: 22px; color: #00ffcc; margin-bottom: 20px; background: #222; display: inline-block; padding: 10px 20px; border-radius: 8px; }
+        body { font-family: Arial, sans-serif; text-align: center; margin-top: 50px; background: #f4f4f9; }
+        .box { display: inline-block; padding: 20px; background: white; border-radius: 8px; box-shadow: 0 4px 6px rgba(0,0,0,0.1); }
+        .status { font-weight: bold; font-size: 1.2em; color: #333; margin: 20px 0; }
+        button { padding: 10px 20px; font-size: 14px; cursor: pointer; border: none; border-radius: 5px; background: #007BFF; color: white; margin: 5px; }
+        button.reset { background: #DC3545; }
     </style>
 </head>
 <body>
 
-    <!-- Статус секретного подарка -->
-    <div class="gift-box">
-        🎁 Статус подарка: <span id="gift-status">Не получен</span>
-    </div>
-
-    <!-- Вкладки игры -->
-    <nav>
-        <button onclick="openTab('main')">Главная</button>
-        <button onclick="openTab('inventory')">Инвентарь</button>
-    </nav>
-
-    <!-- Обычная главная вкладка -->
-    <div id="main" class="tab-content active">
-        <h1>🎮 Игровое Поле</h1>
-        <p>Добро пожаловать на prob7x.github.io/test!</p>
-        <p>Это ваша обычная вкладка игры.</p>
-    </div>
-
-    <!-- Вкладка инвентаря -->
-    <div id="inventory" class="tab-content">
-        <h1>🎒 Ваш Инвентарь</h1>
-        <p id="inventory-text">У вас пока пусто.</p>
+    <div class="box">
+        <h1>Личный кабинет</h1>
+        <!-- Сюда скрипт выведет текущий статус подарка -->
+        <div class="status" id="giftStatus">Загрузка статуса...</div>
+        
+        <button onclick="checkGift()">Проверить подарок вручную</button>
+        <button class="reset" onclick="resetGift()">Сбросить прогресс</button>
     </div>
 
     <script>
-        // Проверяем при старте, был ли подарок получен ранее
-        let hasGift = localStorage.getItem('promo2026_activated') === 'true';
+        // Функция, которая проверяет LocalStorage и меняет текст на экране
+        function checkGift() {
+            const statusElement = document.getElementById('giftStatus');
+            const hasGift = localStorage.getItem('my_promo_gift');
+
+            if (hasGift === 'activated') {
+                statusElement.innerHTML = "🎁 Подарок успешно активирован! Награда у вас.";
+                statusElement.style.color = "green";
+            } else {
+                statusElement.innerHTML = "❌ Вы еще не получили подарок.";
+                statusElement.style.color = "red";
+            }
+        }
+
+        // Функция для сброса (чтобы протестировать заново)
+        function resetGift() {
+            localStorage.removeItem('my_promo_gift');
+            checkGift();
+        }
+
+        // Проверяем статус сразу при открытии страницы
+        window.onload = checkGift;
         
-        // Функция обновления текста подарка на экране
-        function updateGameUI() {
-            if (hasGift) {
-                document.getElementById('gift-status').innerText = "АКТИВИРОВАН (Подарок 2026 получен!)";
-                document.getElementById('gift-status').style.color = "#ffcc00";
-                document.getElementById('inventory-text').innerHTML = "⭐ <strong>Секретный подарок 2026</strong> (Успешно сохранен в вашем профиле!)";
-            }
-        }
-
-        // Функция переключения вкладок
-        function openTab(tabId) {
-            const tabs = document.getElementsByClassName('tab-content');
-            for (let i = 0; i < tabs.length; i++) {
-                tabs[i].classList.remove('active');
-            }
-            document.getElementById(tabId).classList.add('active');
-        }
-
-        // --- ЛОГИКА СЧИТЫВАНИЯ ПРЯМОЙ ССЫЛКИ ---
-        function checkPromoRoute() {
-            const urlParams = new URLSearchParams(window.location.search);
-            const customPath = urlParams.get('p'); // Вытаскиваем переданный из 404.html путь
-
-            if (customPath) {
-                // Разрезаем строку пути по слэшам. Для "/test/PROMO2026" массив будет: ['test', 'PROMO2026']
-                const segments = customPath.split('/').filter(Boolean);
-
-                // Проверяем структуру: первый элемент 'test', а второй — это наш промокод
-                if (segments[0] === 'test' && segments[1]) {
-                    const promoCode = decodeURIComponent(segments[1]).toLowerCase(); // переводим в мелкий шрифт для удобства
-
-                    // Если в ссылке после /test/ указан именно код promo2026
-                    if (promoCode === 'promo2026') {
-                        if (hasGift) {
-                            alert("Вы уже забирали этот подарок!");
-                        } else {
-                            // Сохраняем подарок в браузере навсегда
-                            localStorage.setItem('promo2026_activated', 'true');
-                            hasGift = true;
-                            alert("🎉 Ура! Вы перешли по секретной ссылке. Подарок успешно добавлен на ваш аккаунт!");
-                        }
-                    } else {
-                        alert("❌ Ошибка: Такого промокода или страницы не существует.");
-                    }
-
-                    // Обновляем внешний вид игры
-                    updateGameUI();
-
-                    // МГНОВЕННО очищаем адресную строку браузера до обычной ссылки: prob7x.github.io/test/
-                    const cleanUrl = window.location.origin + '/test/';
-                    window.history.replaceState(null, '', cleanUrl);
-
-                    // Открываем игроку обычную вкладку
-                    openTab('main');
-                }
-            }
-        }
-
-        // Запуск проверок при загрузке страницы
-        window.onload = function() {
-            checkPromoRoute();
-            updateGameUI();
-        };
+        // Слушаем изменения в LocalStorage из других вкладок в реальном времени
+        window.addEventListener('storage', checkGift);
     </script>
+
 </body>
 </html>
