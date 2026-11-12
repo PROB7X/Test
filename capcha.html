@@ -1,0 +1,18 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+  <meta charset="UTF-8">
+  <title>Проверка</title>
+</head>
+<body>
+  <h2>Подтвердите, что вы не робот</h2>
+  <button onclick="passCaptcha()">Я человек</button>
+
+  <script>
+    function passCaptcha() {
+      sessionStorage.setItem('captcha_passed', 'true');
+      window.location.replace('index.html');
+    }
+  </script>
+</body>
+</html>
