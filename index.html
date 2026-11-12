@@ -1,48 +1,5 @@
-<!DOCTYPE html>
-<html lang="ru">
-<head>
-    <meta charset="UTF-8">
-    <title>Главная страница</title>
-    <style>
-        body { font-family: Arial, sans-serif; text-align: center; margin-top: 50px; background: #f4f4f9; }
-        .box { display: inline-block; padding: 20px; background: white; border-radius: 8px; box-shadow: 0 4px 6px rgba(0,0,0,0.1); }
-        .status { font-weight: bold; font-size: 1.2em; color: #333; margin: 20px 0; }
-        button { padding: 10px 20px; font-size: 14px; cursor: pointer; border: none; border-radius: 5px; background: #007BFF; color: white; margin: 5px; }
-        button.reset { background: #DC3545; }
-    </style>
-</head>
-<body>
-
-    <div class="box">
-        <h1>Личный кабинет</h1>
-        <div class="status" id="giftStatus">Загрузка статуса...</div>
-        
-        <button onclick="checkGift()">Проверить подарок вручную</button>
-        <button class="reset" onclick="resetGift()">Сбросить прогресс</button>
-    </div>
-
-    <script>
-        function checkGift() {
-            const statusElement = document.getElementById('giftStatus');
-            const hasGift = localStorage.getItem('my_promo_gift');
-
-            if (hasGift === 'activated') {
-                statusElement.innerHTML = "🎁 Подарок успешно активирован! Награда у вас.";
-                statusElement.style.color = "green";
-            } else {
-                statusElement.innerHTML = "❌ Вы еще не получили подарок.";
-                statusElement.style.color = "red";
-            }
-        }
-
-        function resetGift() {
-            localStorage.removeItem('my_promo_gift');
-            checkGift();
-        }
-
-        window.onload = checkGift;
-        window.addEventListener('storage', checkGift);
-    </script>
-
-</body>
-</html>
+<script>
+  if (!sessionStorage.getItem('captcha_passed')) {
+    window.location.replace('captcha.html');
+  }
+</script>
