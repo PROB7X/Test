@@ -1,5 +1,967 @@
-<script>
-  if (!sessionStorage.getItem('captcha_passed')) {
-    window.location.replace('capcha.html');
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<title>SVG VTuber Studio Pro (.vn)</title>
+<style>
+  :root {
+    --bg-dark: #11131a;
+    --panel-bg: #1a1d29;
+    --card-bg: #232738;
+    --accent: #6c5ce7;
+    --accent-hover: #8273f5;
+    --text-main: #f1f2f6;
+    --text-muted: #9aa5b8;
+    --border: #2e3446;
   }
+
+  * {
+    box-sizing: border-box;
+    margin: 0;
+    padding: 0;
+    font-family: 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+    user-select: none;
+  }
+
+  body {
+    background: var(--bg-dark);
+    color: var(--text-main);
+    height: 100vh;
+    width: 100vw;
+    overflow: hidden;
+    display: flex;
+    flex-direction: column;
+  }
+
+  #fullscreen-overlay {
+    position: fixed;
+    inset: 0;
+    background: rgba(10, 12, 18, 0.96);
+    z-index: 9999;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 18px;
+    text-align: center;
+    padding: 20px;
+    backdrop-filter: blur(10px);
+  }
+
+  .btn-primary {
+    background: var(--accent);
+    color: #fff;
+    border: none;
+    padding: 12px 22px;
+    font-size: 14px;
+    font-weight: 700;
+    border-radius: 10px;
+    cursor: pointer;
+    transition: 0.2s;
+  }
+
+  .btn-primary:hover { background: var(--accent-hover); }
+
+  .btn-secondary {
+    background: #2c3144;
+    color: #fff;
+    border: 1px solid #3e455e;
+    padding: 8px 14px;
+    font-size: 13px;
+    border-radius: 8px;
+    cursor: pointer;
+    transition: 0.2s;
+  }
+
+  .btn-secondary:hover { background: #383f57; }
+
+  header {
+    height: 54px;
+    background: var(--panel-bg);
+    border-bottom: 1px solid var(--border);
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 0 18px;
+    z-index: 20;
+  }
+
+  .logo {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    font-weight: 800;
+    font-size: 16px;
+  }
+
+  .status-dot {
+    width: 10px;
+    height: 10px;
+    border-radius: 50%;
+    background: #ff4757;
+  }
+
+  .status-dot.active {
+    background: #2ed573;
+    box-shadow: 0 0 8px #2ed573;
+  }
+
+  .header-actions { display: flex; gap: 10px; }
+
+  .workspace {
+    display: flex;
+    flex: 1;
+    height: calc(100vh - 54px);
+    overflow: hidden;
+  }
+
+  .stage-wrapper {
+    flex: 1;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: radial-gradient(circle at center, #202434 0%, #11131a 100%);
+    position: relative;
+    padding: 20px;
+  }
+
+  #capture-stage {
+    width: 100%;
+    height: 100%;
+    max-width: 900px;
+    max-height: 580px;
+    background: #1c202e;
+    border-radius: 16px;
+    position: relative;
+    overflow: hidden;
+    box-shadow: 0 20px 50px rgba(0,0,0,0.55);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+
+  #stage-border-overlay {
+    position: absolute;
+    inset: 12px;
+    border: 4px solid #6c5ce7;
+    border-radius: 14px;
+    pointer-events: none;
+    z-index: 90;
+    box-shadow: inset 0 0 16px #6c5ce7, 0 0 16px #6c5ce7;
+  }
+  #items-layer {
+    position: absolute;
+    inset: 0;
+    z-index: 50;
+    pointer-events: none;
+  }
+
+  .draggable-item {
+    position: absolute;
+    cursor: grab;
+    pointer-events: auto;
+    filter: drop-shadow(0 5px 10px rgba(0,0,0,0.45));
+  }
+
+  .draggable-item:active { cursor: grabbing; }
+
+  #avatar-svg {
+    width: 100%;
+    height: 100%;
+    z-index: 10;
+  }
+
+  #webcam {
+    position: absolute;
+    top: 16px;
+    right: 16px;
+    width: 130px;
+    height: 98px;
+    border-radius: 8px;
+    object-fit: cover;
+    transform: scaleX(-1);
+    border: 2px solid rgba(255,255,255,0.25);
+    z-index: 80;
+    background: #000;
+  }
+
+  .vn-dock {
+    position: absolute;
+    bottom: 16px;
+    left: 16px;
+    z-index: 95;
+    display: flex;
+    gap: 8px;
+    background: rgba(20, 23, 34, 0.85);
+    padding: 6px 10px;
+    border-radius: 12px;
+    border: 1px solid var(--border);
+    backdrop-filter: blur(6px);
+  }
+
+  .vn-icon-btn {
+    background: #272c3f;
+    border: 1px solid #3c435e;
+    color: #fff;
+    width: 38px;
+    height: 38px;
+    border-radius: 9px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    transition: 0.2s;
+  }
+
+  .vn-icon-btn:hover {
+    background: var(--accent);
+    border-color: var(--accent);
+    transform: translateY(-2px);
+  }
+
+  .sidebar {
+    width: 375px;
+    background: var(--panel-bg);
+    border-left: 1px solid var(--border);
+    display: flex;
+    flex-direction: column;
+    z-index: 20;
+  }
+
+  .tabs {
+    display: flex;
+    flex-wrap: wrap;
+    border-bottom: 1px solid var(--border);
+    background: #141722;
+  }
+
+  .tab-btn {
+    flex: 1 1 auto;
+    padding: 11px 6px;
+    background: none;
+    border: none;
+    color: var(--text-muted);
+    font-size: 11.5px;
+    font-weight: 700;
+    cursor: pointer;
+    border-bottom: 2px solid transparent;
+  }
+
+  .tab-btn.active {
+    color: #fff;
+    border-bottom-color: var(--accent);
+    background: var(--panel-bg);
+  }
+
+  .tab-content {
+    flex: 1;
+    overflow-y: auto;
+    padding: 15px;
+    display: none;
+    flex-direction: column;
+    gap: 14px;
+  }
+
+  .tab-content.active { display: flex; }
+
+  .control-group {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    background: var(--card-bg);
+    padding: 12px;
+    border-radius: 10px;
+  }
+
+  .control-group h4 {
+    font-size: 13px;
+    color: #a29bfe;
+    margin-bottom: 2px;
+  }
+
+  .control-group label {
+    font-size: 12.5px;
+    color: #dfe4ea;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 8px;
+  }
+
+  input[type="range"] { width: 100%; accent-color: var(--accent); }
+  input[type="color"] { border: none; width: 34px; height: 26px; border-radius: 5px; cursor: pointer; background: none; }
+  input[type="checkbox"] { width: 17px; height: 17px; accent-color: var(--accent); }
+
+  .btn-row { display: flex; gap: 6px; flex-wrap: wrap; }
+  .btn-row button { flex: 1; font-size: 11.5px; padding: 7px 8px; }
+
+  #chroma-canvas-wrapper {
+    width: 100%;
+    max-height: 150px;
+    overflow: hidden;
+    border-radius: 8px;
+    background: repeating-conic-gradient(#2f3542 0% 25%, #1e222d 0% 50%) 50% / 14px 14px;
+    display: flex;
+    justify-content: center;
+  }
+
+  #chroma-canvas { max-width: 100%; max-height: 150px; cursor: crosshair; }
+
+  .item-card {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    background: #171a26;
+    padding: 7px 10px;
+    border-radius: 7px;
+    font-size: 12.5px;
+  }
+</style>
+</head>
+<body>
+
+<div id="fullscreen-overlay">
+  <h1>🎥 SVG VTuber Studio Pro</h1>
+  <p style="color:var(--text-muted);max-width:420px;">Разверните экран в горизонтальный режим для работы трекинга лица, кастомных текстур и плавающего окна.</p>
+  <button class="btn-primary" id="btn-enter-fullscreen">На весь экран</button>
+</div>
+<header>
+  <div class="logo">
+    <span class="status-dot" id="cam-status"></span>
+    <span>VTuber Studio (.vn)</span>
+  </div>
+  <div class="header-actions">
+    <button class="btn-secondary" id="btn-start-cam">📷 Включить камеру</button>
+    <button class="btn-primary" id="btn-pip">🪟 Открыть как плавающее окно</button>
+  </div>
+</header>
+
+<div class="workspace">
+  <div class="stage-wrapper" id="stage-home">
+    <div id="capture-stage">
+      <div id="stage-border-overlay"></div>
+      <div id="items-layer"></div>
+      <video id="webcam" autoplay playsinline muted></video>
+
+      <div class="vn-dock" title="Управление профилем .vn">
+        <button class="vn-icon-btn" id="btn-vn-export" title="Сохранить настройки в .vn">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/>
+          </svg>
+        </button>
+        <button class="vn-icon-btn" id="btn-vn-import" title="Загрузить файл .vn">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/>
+          </svg>
+        </button>
+        <button class="vn-icon-btn" id="btn-vn-share" title="Поделиться .vn с другом">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <circle cx="18" cy="5" r="3"/><circle cx="6" cy="12" r="3"/><circle cx="18" cy="19" r="3"/>
+            <line x1="8.59" y1="13.51" x2="15.42" y2="17.49"/><line x1="15.41" y1="6.51" x2="8.59" y2="10.49"/>
+          </svg>
+        </button>
+        <input type="file" id="vn-file-input" accept=".vn,application/json" style="display:none">
+      </div>
+
+      <svg id="avatar-svg" viewBox="0 0 800 550" xmlns="http://w3.org">
+        <defs>
+          <clipPath id="room-clip"><rect x="0" y="0" width="800" height="420"/></clipPath>
+          <clipPath id="clothes-clip">
+            <path d="M -115 130 C -115 40, -60 10, 0 10 C 60 10, 115 40, 115 130 Z"/>
+          </clipPath>
+        </defs>
+
+        <rect width="800" height="550" fill="#2c3e50" id="svg-room-bg"/>
+        <g clip-path="url(#room-clip)">
+          <foreignObject id="room-media-fo" x="0" y="0" width="800" height="420" style="display:none;">
+            <div xmlns="http://w3.org" style="width:100%;height:100%;overflow:hidden;position:relative;">
+              <img id="room-img" style="position:absolute;transform-origin:center;display:none;"/>
+              <video id="room-vid" autoplay loop muted playsinline style="position:absolute;transform-origin:center;display:none;"></video>
+            </div>
+          </foreignObject>
+        </g>
+
+        <g id="character-body" transform="translate(400, 320)">
+          <path d="M -115 130 C -115 40, -60 10, 0 10 C 60 10, 115 40, 115 130 Z" fill="#6c5ce7" id="svg-clothes"/>
+          <g clip-path="url(#clothes-clip)">
+            <foreignObject id="clothes-media-fo" x="-120" y="0" width="240" height="140" style="display:none;">
+              <div xmlns="http://w3.org" style="width:100%;height:100%;overflow:hidden;position:relative;">
+                <img id="clothes-img" style="position:absolute;transform-origin:center;display:none;"/>
+                <video id="clothes-vid" autoplay loop muted playsinline style="position:absolute;transform-origin:center;display:none;"></video>
+              </div>
+            </foreignObject>
+          </g>
+          <rect x="-22" y="-30" width="44" height="55" rx="15" fill="#ffdbac" id="svg-neck"/>
+        </g>
+
+        <g id="character-head" transform="translate(400, 220)">
+          <path d="M -95 -20 C -110 80, -90 140, -60 150 L 60 150 C 90 140, 110 80, 95 -20 Z" fill="#2d3436" id="svg-hair-back"/>
+          <circle cx="-85" cy="10" r="18" fill="#ffdbac" id="svg-ear-l"/>
+          <circle cx="85" cy="10" r="18" fill="#ffdbac" id="svg-ear-r"/>
+          <rect x="-85" y="-95" width="170" height="190" rx="82" fill="#ffdbac" id="svg-skin"/>
+
+          <g id="face-features">
+            <g transform="translate(-35, -5)">
+              <ellipse cx="0" cy="0" rx="16" ry="18" fill="#fff"/>
+              <circle id="pupil-left" cx="0" cy="0" r="9" fill="#2d3436"/>
+              <circle cx="-3" cy="-4" r="3" fill="#fff"/>
+              <rect id="eyelid-left" x="-18" y="-20" width="36" height="0" rx="4" fill="#ffdbac"/>
+            </g>
+            <g transform="translate(35, -5)">
+              <ellipse cx="0" cy="0" rx="16" ry="18" fill="#fff"/>
+              <circle id="pupil-right" cx="0" cy="0" r="9" fill="#2d3436"/>
+              <circle cx="-3" cy="-4" r="3" fill="#fff"/>
+              <rect id="eyelid-right" x="-18" y="-20" width="36" height="0" rx="4" fill="#ffdbac"/>
+            </g>
+            <path id="brow-left" d="M -52 -30 Q -35 -38 -18 -30" stroke="#2d3436" stroke-width="5" stroke-linecap="round" fill="none"/>
+            <path id="brow-right" d="M 18 -30 Q 35 -38 52 -30" stroke="#2d3436" stroke-width="5" stroke-linecap="round" fill="none"/>
+            <g transform="translate(0, 44)">
+              <path id="mouth-shape" d="M -18 0 Q 0 8 18 0 Q 0 12 -18 0 Z" fill="#d63031" stroke="#2d3436" stroke-width="2.5"/>
+            </g>
+          </g>
+          <path d="M -86 -25 C -86 -105, 86 -105, 86 -25 C 70 -55, 45 -65, 25 -35 C 10 -65, -15 -65, -30 -32 C -50 -60, -70 -50, -86 -25 Z" fill="#2d3436" id="svg-hair-front"/>
+        </g>
+
+        <rect x="0" y="420" width="800" height="130" fill="#2f3640" id="svg-desk"/>
+        <g id="keyboard-group">
+          <rect x="230" y="445" width="250" height="72" rx="8" fill="#353b48" stroke="#718093" stroke-width="2"/>
+          <rect x="515" y="455" width="36" height="52" rx="16" fill="#353b48" stroke="#718093" stroke-width="2"/>
+        </g>
+        <g id="hands-group">
+          <g id="hand-left" transform="translate(310, 465)">
+            <rect x="-22" y="-15" width="44" height="36" rx="18" fill="#ffdbac" stroke="#2d3436" stroke-width="2" class="skin-hand"/>
+          </g>
+          <g id="hand-right" transform="translate(533, 470)">
+            <rect x="-20" y="-15" width="40" height="36" rx="18" fill="#ffdbac" stroke="#2d3436" stroke-width="2" class="skin-hand"/>
+          </g>
+        </g>
+      </svg>
+    </div>
+  </div>
+  <aside class="sidebar">
+    <div class="tabs">
+      <button class="tab-btn active" data-tab="tab-avatar">Персонаж</button>
+      <button class="tab-btn" data-tab="tab-media">Одежда/Фон</button>
+      <button class="tab-btn" data-tab="tab-items">Предметы</button>
+      <button class="tab-btn" data-tab="tab-border">Обводка окна</button>
+    </div>
+
+    <div class="tab-content active" id="tab-avatar">
+      <div class="control-group">
+        <h4>Внешность и трекинг</h4>
+        <label>Волосы <input type="color" id="opt-hair-color" value="#2d3436"></label>
+        <label>Кожа <input type="color" id="opt-skin-color" value="#ffdbac"></label>
+        <label>Одежда (базовый цвет) <input type="color" id="opt-clothes-color" value="#6c5ce7"></label>
+        <label>Комната (базовый цвет) <input type="color" id="opt-bg-color" value="#2c3e50"></label>
+        <label>Чувствительность X/Y <span id="val-sens">1.0</span></label>
+        <input type="range" id="opt-sensitivity" min="0.3" max="2.5" step="0.1" value="1.0">
+        <label>Показывать камеру <input type="checkbox" id="opt-show-cam" checked></label>
+        <label>Показывать клавиатуру <input type="checkbox" id="opt-show-kb" checked></label>
+        <label>Показывать руки <input type="checkbox" id="opt-show-hands" checked></label>
+        <button class="btn-secondary" id="btn-reset-pos">Сбросить центр лица</button>
+      </div>
+    </div>
+
+    <div class="tab-content" id="tab-media">
+      <div class="control-group">
+        <h4>👕 Текстура одежды (Фото / Видео / Камера)</h4>
+        <div class="btn-row">
+          <button class="btn-secondary" onclick="document.getElementById('file-clothes').click()">📁 Файл</button>
+          <button class="btn-secondary" id="snap-clothes">📸 Сфоткать</button>
+          <button class="btn-secondary" id="clear-clothes">✖ Сброс</button>
+        </div>
+        <input type="file" id="file-clothes" accept="image/*,video/*" style="display:none">
+        <label>Масштаб (Кадрировка) <span id="val-cl-scale">100</span>%</label>
+        <input type="range" id="cl-scale" min="30" max="300" value="100">
+        <label>Сдвиг X <span id="val-cl-x">0</span>px</label>
+        <input type="range" id="cl-x" min="-150" max="150" value="0">
+        <label>Сдвиг Y <span id="val-cl-y">0</span>px</label>
+        <input type="range" id="cl-y" min="-150" max="150" value="0">
+      </div>
+
+      <div class="control-group">
+        <h4>🏠 Фон комнаты (Фото / Видео / Камера)</h4>
+        <div class="btn-row">
+          <button class="btn-secondary" onclick="document.getElementById('file-room').click()">📁 Файл</button>
+          <button class="btn-secondary" id="snap-room">📸 Сфоткать</button>
+          <button class="btn-secondary" id="clear-room">✖ Сброс</button>
+        </div>
+        <input type="file" id="file-room" accept="image/*,video/*" style="display:none">
+        <label>Масштаб (Кадрировка) <span id="val-rm-scale">100</span>%</label>
+        <input type="range" id="rm-scale" min="30" max="300" value="100">
+        <label>Сдвиг X <span id="val-rm-x">0</span>px</label>
+        <input type="range" id="rm-x" min="-250" max="250" value="0">
+        <label>Сдвиг Y <span id="val-rm-y">0</span>px</label>
+        <input type="range" id="rm-y" min="-250" max="250" value="0">
+      </div>
+    </div>
+
+    <div class="tab-content" id="tab-items">
+      <div class="control-group">
+        <h4>Добавить предмет на стол</h4>
+        <input type="file" id="item-upload" accept="image/*,.svg">
+        <div id="chroma-editor" style="display:none;flex-direction:column;gap:8px;">
+          <p style="font-size:11.5px;color:#00d2d3;">👆 Кликните по фону картинки, чтобы вырезать его:</p>
+          <div id="chroma-canvas-wrapper"><canvas id="chroma-canvas"></canvas></div>
+          <label>Допуск хромокея <span id="val-chroma-tol">40</span></label>
+          <input type="range" id="chroma-tolerance" min="5" max="150" value="40">
+          <label>Размер <span id="val-item-scale">110</span>px</label>
+          <input type="range" id="item-scale" min="40" max="260" value="110">
+          <button class="btn-primary" id="btn-add-item">Поставить на стол</button>
+        </div>
+      </div>
+      <div class="control-group">
+        <h4>Предметы на столе (перетаскивайте)</h4>
+        <div id="active-items-list" style="display:flex;flex-direction:column;gap:6px;"></div>
+      </div>
+    </div>
+
+    <div class="tab-content" id="tab-border">
+      <div class="control-group">
+        <h4>Рамка у края плавающего окна</h4>
+        <label>Включить обводку <input type="checkbox" id="opt-border-enable" checked></label>
+        <label>Показывать только в плавающем окне <input type="checkbox" id="opt-border-pip-only"></label>
+        <label>Цвет обводки <input type="color" id="opt-border-color" value="#6c5ce7"></label>
+        <label>Толщина рамки <span id="val-border-width">4</span>px</label>
+        <input type="range" id="opt-border-width" min="1" max="20" value="4">
+        <label>Отступ от конца окна <span id="val-border-inset">12</span>px</label>
+        <input type="range" id="opt-border-inset" min="0" max="50" value="12">
+        <label>Скругление углов <span id="val-border-radius">14</span>px</label>
+        <input type="range" id="opt-border-radius" min="0" max="40" value="14">
+        <label>Неоновое свечение <input type="checkbox" id="opt-border-glow" checked></label>
+      </div>
+    </div>
+  </aside>
+</div>
+<script>
+  const fsOverlay = document.getElementById('fullscreen-overlay');
+  document.getElementById('btn-enter-fullscreen').addEventListener('click', async () => {
+    try {
+      if (!document.fullscreenElement && document.documentElement.requestFullscreen) {
+        await document.documentElement.requestFullscreen();
+      }
+      if (screen.orientation && screen.orientation.lock) {
+        await screen.orientation.lock('landscape').catch(() => {});
+      }
+    } catch (e) {}
+    fsOverlay.style.display = 'none';
+  });
+
+  document.addEventListener('fullscreenchange', () => {
+    fsOverlay.style.display = document.fullscreenElement ? 'none' : 'flex';
+  });
+
+  const defaultState = {
+    hairColor: '#2d3436', skinColor: '#ffdbac', clothesColor: '#6c5ce7', bgColor: '#2c3e50',
+    sensitivity: 1.0, showCam: true, showKb: true, showHands: true,
+    borderEnable: true, borderPipOnly: false, borderColor: '#6c5ce7',
+    borderWidth: 4, borderInset: 12, borderRadius: 14, borderGlow: true,
+    clothesMedia: null,
+    roomMedia: null,
+    items: []
+  };
+
+  let state = defaultState;
+  try {
+    const saved = JSON.parse(localStorage.getItem('vtuber_vn_state'));
+    if (saved) state = { ...defaultState, ...saved };
+  } catch (e) {}
+
+  let isPipActive = false;
+
+  function saveState() {
+    try { localStorage.setItem('vtuber_vn_state', JSON.stringify(state)); } catch (e) {}
+  }
+
+  const webcam = document.getElementById('webcam');
+  const captureStage = document.getElementById('capture-stage');
+  const stageHome = document.getElementById('stage-home');
+
+  document.querySelectorAll('.tab-btn').forEach(btn => {
+    btn.addEventListener('click', () => {
+      document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+      document.querySelectorAll('.tab-content').forEach(c => c.classList.remove('active'));
+      btn.classList.add('active');
+      document.getElementById(btn.dataset.tab).classList.add('active');
+    });
+  });
+
+  function renderMediaLayer(prefix, media, boxW, boxH) {
+    const fo = document.getElementById(`${prefix}-media-fo`);
+    const img = document.getElementById(`${prefix}-img`);
+    const vid = document.getElementById(`${prefix}-vid`);
+
+    if (!media || !media.src) {
+      fo.style.display = 'none';
+      vid.pause();
+      return;
+    }
+
+    fo.style.display = 'block';
+    const scale = (media.scale || 100) / 100;
+    const tx = media.x || 0;
+    const ty = media.y || 0;
+    const styleTransform = `translate(${tx}px, ${ty}px) scale(${scale})`;
+
+    if (media.type === 'video') {
+      img.style.display = 'none';
+      vid.style.display = 'block';
+      if (vid.src !== media.src) vid.src = media.src;
+      vid.style.width = boxW + 'px';
+      vid.style.height = boxH + 'px';
+      vid.style.objectFit = 'cover';
+      vid.style.transform = styleTransform;
+      vid.play().catch(() => {});
+    } else {
+      vid.style.display = 'none';
+      vid.pause();
+      img.style.display = 'block';
+      img.src = media.src;
+      img.style.width = boxW + 'px';
+      img.style.height = boxH + 'px';
+      img.style.objectFit = 'cover';
+      img.style.transform = styleTransform;
+    }
+  }
+
+  function applyAllSettings() {
+    document.getElementById('svg-hair-back').setAttribute('fill', state.hairColor);
+    document.getElementById('svg-hair-front').setAttribute('fill', state.hairColor);
+    document.getElementById('brow-left').setAttribute('stroke', state.hairColor);
+    document.getElementById('brow-right').setAttribute('stroke', state.hairColor);
+    ['svg-skin', 'svg-neck', 'svg-ear-l', 'svg-ear-r', 'eyelid-left', 'eyelid-right'].forEach(id => {
+      document.getElementById(id).setAttribute('fill', state.skinColor);
+    });
+    document.querySelectorAll('.skin-hand').forEach(el => el.setAttribute('fill', state.skinColor));
+    document.getElementById('svg-clothes').setAttribute('fill', state.clothesColor);
+    document.getElementById('svg-room-bg').setAttribute('fill', state.bgColor);
+
+    webcam.style.display = state.showCam ? 'block' : 'none';
+    document.getElementById('keyboard-group').style.display = state.showKb ? 'block' : 'none';
+    document.getElementById('hands-group').style.display = state.showHands ? 'block' : 'none';
+
+    const borderEl = document.getElementById('stage-border-overlay');
+    const showBorder = state.borderEnable && (!state.borderPipOnly || isPipActive);
+    borderEl.style.display = showBorder ? 'block' : 'none';
+    borderEl.style.borderColor = state.borderColor;
+    borderEl.style.borderWidth = state.borderWidth + 'px';
+    borderEl.style.inset = state.borderInset + 'px';
+    borderEl.style.borderRadius = state.borderRadius + 'px';
+    borderEl.style.boxShadow = state.borderGlow ? `inset 0 0 16px ${state.borderColor}, 0 0 16px ${state.borderColor}` : 'none';
+
+    renderMediaLayer('clothes', state.clothesMedia, 240, 140);
+    renderMediaLayer('room', state.roomMedia, 800, 420);
+
+    document.getElementById('opt-hair-color').value = state.hairColor;
+    document.getElementById('opt-skin-color').value = state.skinColor;
+    document.getElementById('opt-clothes-color').value = state.clothesColor;
+    document.getElementById('opt-bg-color').value = state.bgColor;
+    document.getElementById('opt-sensitivity').value = state.sensitivity;
+    document.getElementById('val-sens').textContent = state.sensitivity;
+    document.getElementById('opt-show-cam').checked = state.showCam;
+    document.getElementById('opt-show-kb').checked = state.showKb;
+    document.getElementById('opt-show-hands').checked = state.showHands;
+
+    document.getElementById('opt-border-enable').checked = state.borderEnable;
+    document.getElementById('opt-border-pip-only').checked = state.borderPipOnly;
+    document.getElementById('opt-border-color').value = state.borderColor;
+    document.getElementById('opt-border-width').value = state.borderWidth;
+    document.getElementById('val-border-width').textContent = state.borderWidth;
+    document.getElementById('opt-border-inset').value = state.borderInset;
+    document.getElementById('val-border-inset').textContent = state.borderInset;
+    document.getElementById('opt-border-radius').value = state.borderRadius;
+    document.getElementById('val-border-radius').textContent = state.borderRadius;
+    document.getElementById('opt-border-glow').checked = state.borderGlow;
+  }
+
+  const bind = (id, key, type = 'val') => {
+    document.getElementById(id).addEventListener('input', e => {
+      state[key] = type === 'chk' ? e.target.checked : (type === 'num' ? parseFloat(e.target.value) : e.target.value);
+      applyAllSettings();
+      saveState();
+    });
+  };
+  bind('opt-hair-color', 'hairColor');
+  bind('opt-skin-color', 'skinColor');
+  bind('opt-clothes-color', 'clothesColor');
+  bind('opt-bg-color', 'bgColor');
+  bind('opt-sensitivity', 'sensitivity', 'num');
+  bind('opt-show-cam', 'showCam', 'chk');
+  bind('opt-show-kb', 'showKb', 'chk');
+  bind('opt-show-hands', 'showHands', 'chk');
+  bind('opt-border-enable', 'borderEnable', 'chk');
+  bind('opt-border-pip-only', 'borderPipOnly', 'chk');
+  bind('opt-border-color', 'borderColor');
+  bind('opt-border-width', 'borderWidth', 'num');
+  bind('opt-border-inset', 'borderInset', 'num');
+  bind('opt-border-radius', 'borderRadius', 'num');
+  bind('opt-border-glow', 'borderGlow', 'chk');
+  function setupMediaControls(prefix, stateKey) {
+    document.getElementById(`file-${prefix}`).addEventListener('change', e => {
+      const file = e.target.files;
+      if (!file) return;
+      const isVideo = file.type.startsWith('video/');
+      if (isVideo && file.size > 8 * 1024 * 1024) {
+        alert('Выберите небольшое видео до 8 МБ!');
+        return;
+      }
+      const reader = new FileReader();
+      reader.onload = ev => {
+        state[stateKey] = { type: isVideo ? 'video' : 'image', src: ev.target.result, scale: 100, x: 0, y: 0 };
+        applyAllSettings();
+        saveState();
+      };
+      reader.readAsDataURL(file);
+    });
+
+    document.getElementById(`snap-${prefix}`).addEventListener('click', () => {
+      if (!webcam.srcObject) return alert('Сначала включите камеру вверху!');
+      const c = document.createElement('canvas');
+      c.width = webcam.videoWidth || 640;
+      c.height = webcam.videoHeight || 480;
+      const ctx = c.getContext('2d');
+      ctx.translate(c.width, 0);
+      ctx.scale(-1, 1);
+      ctx.drawImage(webcam, 0, 0, c.width, c.height);
+      state[stateKey] = { type: 'image', src: c.toDataURL('image/jpeg', 0.85), scale: 100, x: 0, y: 0 };
+      applyAllSettings();
+      saveState();
+    });
+
+    document.getElementById(`clear-${prefix}`).addEventListener('click', () => {
+      state[stateKey] = null;
+      applyAllSettings();
+      saveState();
+    });
+
+    const short = prefix === 'clothes' ? 'cl' : 'rm';
+    ['scale', 'x', 'y'].forEach(prop => {
+      document.getElementById(`${short}-${prop}`).addEventListener('input', e => {
+        const val = parseInt(e.target.value, 10);
+        document.getElementById(`val-${short}-${prop}`).textContent = val;
+        if (state[stateKey]) {
+          state[stateKey][prop] = val;
+          applyAllSettings();
+          saveState();
+        }
+      });
+    });
+  }
+  setupMediaControls('clothes', 'clothesMedia');
+  setupMediaControls('room', 'roomMedia');
+
+  document.getElementById('btn-vn-export').addEventListener('click', () => {
+    const blob = new Blob([JSON.stringify(state, null, 2)], { type: 'application/json' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = `vtuber_preset_${Date.now()}.vn`;
+    a.click();
+    URL.revokeObjectURL(url);
+  });
+
+  document.getElementById('btn-vn-import').addEventListener('click', () => {
+    document.getElementById('vn-file-input').click();
+  });
+
+  document.getElementById('vn-file-input').addEventListener('change', e => {
+    const file = e.target.files;
+    if (!file) return;
+    const reader = new FileReader();
+    reader.onload = ev => {
+      try {
+        const loaded = JSON.parse(ev.target.result);
+        state = { ...defaultState, ...loaded };
+        saveState();
+        applyAllSettings();
+        renderItems();
+        alert('Профиль .vn успешно загружен!');
+      } catch (err) {
+        alert('Ошибка чтения файла .vn');
+      }
+    };
+    reader.readAsText(file);
+  });
+
+  document.getElementById('btn-vn-share').addEventListener('click', async () => {
+    const jsonStr = JSON.stringify(state);
+    const file = new File([jsonStr], 'avatar_config.vn', { type: 'application/json' });
+    if (navigator.canShare && navigator.canShare({ files: [file] })) {
+      try {
+        await navigator.share({ files: [file], title: 'Мой VTuber аватар (.vn)', text: 'Открой этот .vn файл в SVG VTuber Studio!' });
+        return;
+      } catch (e) {}
+    }
+    await navigator.clipboard.writeText(jsonStr).catch(() => {});
+    alert('Конфигурация .vn скопирована в буфер обмена! Также вы можете сохранить файл .vn и отправить другу.');
+  });
+
+  const chromaCanvas = document.getElementById('chroma-canvas');
+  const chromaCtx = chromaCanvas.getContext('2d', { willReadFrequently: true });
+  let origImgData = null, pickedRgb = null;
+
+  document.getElementById('item-upload').addEventListener('change', e => {
+    const file = e.target.files;
+    if (!file) return;
+    const reader = new FileReader();
+    reader.onload = ev => {
+      const img = new Image();
+      img.onload = () => {
+        const ratio = Math.min(260 / img.width, 260 / img.height, 1);
+        chromaCanvas.width = Math.round(img.width * ratio);
+        chromaCanvas.height = Math.round(img.height * ratio);
+        chromaCtx.drawImage(img, 0, 0, chromaCanvas.width, chromaCanvas.height);
+        origImgData = chromaCtx.getImageData(0, 0, chromaCanvas.width, chromaCanvas.height);
+        pickedRgb = null;
+        document.getElementById('chroma-editor').style.display = 'flex';
+      };
+      img.src = ev.target.result;
+    };
+    reader.readAsDataURL(file);
+  });
+  function updateChroma() {
+    if (!origImgData) return;
+    const copy = new ImageData(new Uint8ClampedArray(origImgData.data), origImgData.width, origImgData.height);
+    const tol = parseInt(document.getElementById('chroma-tolerance').value, 10);
+    document.getElementById('val-chroma-tol').textContent = tol;
+    if (pickedRgb) {
+      for (let i = 0; i < copy.data.length; i += 4) {
+        const d = Math.hypot(copy.data[i] - pickedRgb.r, copy.data[i+1] - pickedRgb.g, copy.data[i+2] - pickedRgb.b);
+        if (d <= tol) copy.data[i+3] = 0;
+      }
+    }
+    chromaCtx.putImageData(copy, 0, 0);
+  }
+
+  chromaCanvas.addEventListener('click', e => {
+    if (!origImgData) return;
+    const r = chromaCanvas.getBoundingClientRect();
+    const x = Math.floor((e.clientX - r.left) * (chromaCanvas.width / r.width));
+    const y = Math.floor((e.clientY - r.top) * (chromaCanvas.height / r.height));
+    const idx = (y * origImgData.width + x) * 4;
+    pickedRgb = { r: origImgData.data[idx], g: origImgData.data[idx+1], b: origImgData.data[idx+2] };
+    updateChroma();
+  });
+
+  document.getElementById('chroma-tolerance').addEventListener('input', updateChroma);
+  document.getElementById('item-scale').addEventListener('input', e => {
+    document.getElementById('val-item-scale').textContent = e.target.value;
+  });
+
+  document.getElementById('btn-add-item').addEventListener('click', () => {
+    state.items.push({ id: Date.now(), src: chromaCanvas.toDataURL('image/png'), x: 140, y: 340, scale: parseInt(document.getElementById('item-scale').value, 10) });
+    saveState();
+    renderItems();
+    document.getElementById('chroma-editor').style.display = 'none';
+  });
+
+  function renderItems() {
+    const layer = document.getElementById('items-layer');
+    const list = document.getElementById('active-items-list');
+    layer.innerHTML = ''; list.innerHTML = '';
+    state.items.forEach((item, idx) => {
+      const img = document.createElement('img');
+      img.src = item.src;
+      img.className = 'draggable-item';
+      img.style.left = item.x + 'px'; img.style.top = item.y + 'px'; img.style.width = item.scale + 'px';
+      let drag = false, sx, sy, ox, oy;
+      img.addEventListener('mousedown', e => { drag = true; sx = e.clientX; sy = e.clientY; ox = item.x; oy = item.y; });
+      const move = e => { if (!drag) return; item.x = ox + (e.clientX - sx); item.y = oy + (e.clientY - sy); img.style.left = item.x + 'px'; img.style.top = item.y + 'px'; };
+      const up = () => { if (drag) { drag = false; saveState(); } };
+      window.addEventListener('mousemove', move); window.addEventListener('mouseup', up);
+      img.ownerDocument.addEventListener('mousemove', move); img.ownerDocument.addEventListener('mouseup', up);
+      layer.appendChild(img);
+
+      const row = document.createElement('div');
+      row.className = 'item-card';
+      row.innerHTML = `<span>Предмет #${idx + 1}</span>`;
+      const del = document.createElement('button');
+      del.className = 'btn-secondary'; del.textContent = 'Удалить';
+      del.onclick = () => { state.items.splice(idx, 1); saveState(); renderItems(); };
+      row.appendChild(del); list.appendChild(row);
+    });
+  }
+
+  let faceLandmarker = null, camRunning = false, baseNose = null;
+  const smooth = { hx: 0, hy: 0, tilt: 0, open: 0, smile: 0, bL: 0, bR: 0 };
+
+  document.getElementById('btn-start-cam').addEventListener('click', async () => {
+    if (camRunning) return;
+    const btn = document.getElementById('btn-start-cam');
+    btn.textContent = '⏳ Загрузка...';
+    try {
+      const vision = await import("https://jsdelivr.net");
+      const resolver = await vision.FilesetResolver.forVisionTasks("https://jsdelivr.net/wasm");
+      faceLandmarker = await vision.FaceLandmarker.createFromOptions(resolver, {
+        baseOptions: { modelAssetPath: "https://googleapis.com", delegate: "GPU" },
+        outputFaceBlendshapes: true, runningMode: "VIDEO", numFaces: 1
+      });
+      webcam.srcObject = await navigator.mediaDevices.getUserMedia({ video: { width: 640, height: 480 } });
+      webcam.onloadeddata = () => {
+        camRunning = true;
+        btn.textContent = '✅ Камера активна';
+        document.getElementById('cam-status').classList.add('active');
+        loop();
+      };
+    } catch (err) {
+      btn.textContent = '📷 Включить камеру';
+      alert('Ошибка камеры: ' + err.message);
+    }
+  });
+
+  document.getElementById('btn-reset-pos').addEventListener('click', () => { baseNose = null; });
+
+  let lastT = -1;
+  function loop() {
+    if (!camRunning) return;
+    if (webcam.readyState >= 2 && webcam.currentTime !== lastT) {
+      lastT = webcam.currentTime;
+      const res = faceLandmarker.detectForVideo(webcam, performance.now());
+      if (res.faceLandmarks && res.faceLandmarks.length > 0) {
+        const lm = res.faceLandmarks;
+        const nose = lm, leftEye = lm, rightEye = lm;
+        if (!baseNose) baseNose = { x: nose.x, y: nose.y };
+        smooth.hx += ((baseNose.x - nose.x) * 220 * state.sensitivity - smooth.hx) * 0.25;
+        smooth.hy += ((nose.y - baseNose.y) * 180 * state.sensitivity - smooth.hy) * 0.25;
+        smooth.tilt += (-Math.atan2(rightEye.y - leftEye.y, rightEye.x - leftEye.x) * 57.3 - smooth.tilt) * 0.25;
+        if (res.faceBlendshapes && res.faceBlendshapes.length > 0) {
+          const s = Object.fromEntries(res.faceBlendshapes.categories.map(c => [c.categoryName, c.score]));
+          smooth.open += ((s.jawOpen || 0) - smooth.open) * 0.4;
+          smooth.smile += ((((s.mouthSmileLeft || 0) + (s.mouthSmileRight || 0)) / 2) - smooth.smile) * 0.3;
+          smooth.bL += ((s.eyeBlinkRight || 0) - smooth.bL) * 0.5;
+          smooth.bR += ((s.eyeBlinkLeft || 0) - smooth.bR) * 0.5;
+        }
+      }
+    }
+    document.getElementById('character-head').setAttribute('transform', `translate(${400 + smooth.hx}, ${220 + smooth.hy}) rotate(${smooth.tilt})`);
+    document.getElementById('face-features').setAttribute('transform', `translate(${smooth.hx * 0.2}, ${smooth.hy * 0.2})`);
+    document.getElementById('eyelid-left').setAttribute('height', Math.min(38, smooth.bL * 42));
+    document.getElementById('eyelid-right').setAttribute('height', Math.min(38, smooth.bR * 42));
+    const w = 16 + smooth.smile * 14, h = 4 + smooth.open * 32;
+    document.getElementById('mouth-shape').setAttribute('d', `M ${-w} 0 Q 0 ${smooth.smile * 10 - smooth.open * 4} ${w} 0 Q 0 ${h} ${-w} 0 Z`);
+    (captureStage.ownerDocument.defaultView || window).requestAnimationFrame(loop);
+  }
+
+  document.getElementById('btn-pip').addEventListener('click', async () => {
+    if (!('documentPictureInPicture' in window)) return alert('Используйте Chrome или Edge для плавающего окна!');
+    const pipWin = await window.documentPictureInPicture.requestWindow({ width: 640, height: 420 });
+    [...document.styleSheets].forEach(ss => {
+      try { const st = document.createElement('style'); st.textContent = [...ss.cssRules].map(r => r.cssText).join(''); pipWin.document.head.appendChild(st); } catch (e) {}
+    });
+    pipWin.document.body.style.margin = '0';
+    isPipActive = true;
+    applyAllSettings();
+    pipWin.document.body.appendChild(captureStage);
+    pipWin.addEventListener('pagehide', () => {
+      isPipActive = false;
+      applyAllSettings();
+      stageHome.appendChild(captureStage);
+    });
+  });
+
+  applyAllSettings();
+  renderItems();
 </script>
+</body>
+</html>
